@@ -1,0 +1,6 @@
+spring:
+  application:
+    name: WebFluxTaskManager
+  data:
+    mongodb:
+      uri: mongodb+srv://${MONGO_DB_USER}:${MONGO_DB_PASSWORD}@${MONGO_DB_HOST}/${MONGO_DB_NAME}?retryWrites=true&w=majority&appName=WebFluxTaskManager
