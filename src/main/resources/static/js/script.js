@@ -212,5 +212,37 @@ window.onload = function() {
     document.getElementById('taskDueDate').value = formattedDate;
 };
 
+// Función para iniciar la recepción de eventos en tiempo real
+function startTaskStream() {
+    const eventSource = new EventSource('/api/tasks/task-stream');  // Conexión SSE al backend
+
+    eventSource.onmessage = function(event) {
+        const task = JSON.parse(event.data);  // Parsear el objeto Task que llega del servidor
+
+        // Crear el elemento de la nueva tarea y añadirlo a la lista
+        const taskList = document.getElementById('taskList');
+        const listItem = document.createElement('li');
+        listItem.classList.add('task-item');
+        listItem.innerHTML = `
+            <div class="task-content">
+                <span class="task-id"><strong>ID:</strong> ${task.id}</span>
+                <h3 class="task-title">${task.title}</h3>
+                <p class="task-description"><strong>Descripción:</strong> ${task.description}</p>
+                <p class="task-status"><strong>Estado:</strong> ${task.status}</p>
+                <p class="task-due-date"><strong>Fecha límite:</strong> ${task.dueDate}</p>
+            </div>
+        `;
+        taskList.appendChild(listItem);  // Añadir la tarea al DOM
+    };
+
+    eventSource.onerror = function(err) {
+        console.error('Error en la conexión SSE:', err);
+        eventSource.close();
+    };
+}
+
+// Llamar a la función para iniciar el flujo de tareas en tiempo real cuando se cargue la página
+document.addEventListener('DOMContentLoaded', startTaskStream);
+
 // Fetch tasks when the page loads
 document.addEventListener('DOMContentLoaded', fetchTasks);
