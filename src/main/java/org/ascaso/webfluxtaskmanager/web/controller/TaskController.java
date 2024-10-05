@@ -20,7 +20,7 @@ public class TaskController {
     }
 
     @PostMapping
-    public Mono<Task> createTask(@Valid @RequestBody Task task) {
+    public Mono<Task> createTask(@ModelAttribute("newTask") @Valid @RequestBody Task task) {
         return taskService.createTask(task);
     }
 

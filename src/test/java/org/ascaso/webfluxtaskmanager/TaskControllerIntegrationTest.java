@@ -1,9 +1,13 @@
 package org.ascaso.webfluxtaskmanager;
 
+import org.ascaso.webfluxtaskmanager.config.security.SecurityConfig;
 import org.ascaso.webfluxtaskmanager.domain.model.Task;
 import org.ascaso.webfluxtaskmanager.domain.model.TaskStatus;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.boot.actuate.autoconfigure.security.servlet.ManagementWebSecurityAutoConfiguration;
+import org.springframework.boot.autoconfigure.EnableAutoConfiguration;
+import org.springframework.boot.autoconfigure.security.servlet.SecurityAutoConfiguration;
 import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.test.context.ActiveProfiles;
 import org.springframework.test.web.reactive.server.WebTestClient;
