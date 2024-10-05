@@ -3,30 +3,48 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Gestión de Tareas</title>
-    <link rel="stylesheet" href="/css/styles.css">
+    <title>Task Management</title>
+    <link rel="stylesheet" href="/css/styles.css"> <!-- External CSS link -->
 </head>
 <body>
 
+<!-- Main container -->
 <div class="container">
-    <h1>Gestión de Tareas</h1>
+    <h1>Task Management</h1>
 
-    <!-- Formulario para crear una nueva tarea -->
+    <!-- Task form for adding or editing a task -->
     <form id="taskForm">
-        <input type="text" id="taskTitle" placeholder="Título de la tarea" required>
-        <textarea id="taskDescription" placeholder="Descripción de la tarea" required></textarea>
+        <!-- Hidden field for task ID when editing -->
+        <input type="hidden" id="taskId">
+
+        <!-- Task title input -->
+        <input type="text" id="taskTitle" placeholder="Task Title" required>
+
+        <!-- Task description input -->
+        <textarea id="taskDescription" placeholder="Task Description" required></textarea>
+
+        <!-- Task due date input -->
         <input type="date" id="taskDueDate" required>
-        <button type="button" onclick="addTask()">Agregar Tarea</button>
+
+        <!-- Task status select -->
+        <select id="taskStatus">
+            <option value="PENDING">Pending</option>
+            <option value="COMPLETED">Completed</option>
+        </select>
+
+        <!-- Action buttons -->
+        <button type="button" id="addTaskBtn" onclick="addTask()">Add Task</button>
+        <button type="button" id="editTaskBtn" style="display: none;" onclick="saveTask()">Save Changes</button>
     </form>
 
-    <!-- Lista de tareas -->
-    <h2>Mis Tareas</h2>
+    <!-- Task list -->
+    <h2>My Tasks</h2>
     <ul id="taskList">
-        <!-- Las tareas se agregarán dinámicamente aquí -->
+        <!-- Dynamically added tasks will appear here -->
     </ul>
 </div>
 
-<!-- Enlace al archivo externo JavaScript -->
+<!-- External JavaScript link -->
 <script src="/js/script.js"></script>
 
 </body>
