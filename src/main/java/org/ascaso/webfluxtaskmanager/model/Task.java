@@ -25,4 +25,12 @@ public class Task {
 
     @NotNull(message = "Due date is required")
     private LocalDate dueDate;
+
+    public Task(String id, String title, String description, TaskStatus status, LocalDate dueDate) {
+        this.id = id;
+        this.title = title;
+        this.description = description;
+        this.status = status;
+        this.dueDate = dueDate;
+    }
 }

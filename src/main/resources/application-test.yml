@@ -1,0 +1,7 @@
+# application-test.yml
+spring:
+  security:
+    enabled: false   # Deshabilita la seguridad durante las pruebas
+logging:
+  level:
+    org.springframework: INFO  # Puedes ajustar los niveles de logging para obtener más detalles en las pruebas
