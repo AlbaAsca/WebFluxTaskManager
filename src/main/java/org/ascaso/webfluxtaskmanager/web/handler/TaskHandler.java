@@ -1,6 +1,6 @@
-package org.ascaso.webfluxtaskmanager.handler;
+package org.ascaso.webfluxtaskmanager.web.handler;
 
-import org.ascaso.webfluxtaskmanager.model.Task;
+import org.ascaso.webfluxtaskmanager.domain.model.Task;
 import org.ascaso.webfluxtaskmanager.service.TaskService;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.MediaType;

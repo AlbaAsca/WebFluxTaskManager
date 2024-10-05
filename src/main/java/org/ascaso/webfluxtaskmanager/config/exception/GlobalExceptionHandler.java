@@ -1,4 +1,4 @@
-package org.ascaso.webfluxtaskmanager.exception;
+package org.ascaso.webfluxtaskmanager.config.exception;
 
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;

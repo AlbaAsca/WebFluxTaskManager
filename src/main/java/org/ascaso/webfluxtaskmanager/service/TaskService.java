@@ -1,8 +1,8 @@
 package org.ascaso.webfluxtaskmanager.service;
 
-import org.ascaso.webfluxtaskmanager.exception.ResourceNotFoundException;
-import org.ascaso.webfluxtaskmanager.model.Task;
-import org.ascaso.webfluxtaskmanager.repository.TaskRepository;
+import org.ascaso.webfluxtaskmanager.config.exception.ResourceNotFoundException;
+import org.ascaso.webfluxtaskmanager.domain.model.Task;
+import org.ascaso.webfluxtaskmanager.domain.repository.TaskRepository;
 import org.springframework.stereotype.Service;
 import reactor.core.publisher.Flux;
 import reactor.core.publisher.Mono;

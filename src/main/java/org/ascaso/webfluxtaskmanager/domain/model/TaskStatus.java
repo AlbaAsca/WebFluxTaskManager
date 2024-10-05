@@ -1,4 +1,4 @@
-package org.ascaso.webfluxtaskmanager.model;
+package org.ascaso.webfluxtaskmanager.domain.model;
 
 public enum TaskStatus {
     PENDING,

@@ -1,8 +1,8 @@
 package org.ascaso.webfluxtaskmanager;
 
-import org.ascaso.webfluxtaskmanager.handler.TaskHandler;
-import org.ascaso.webfluxtaskmanager.model.Task;
-import org.ascaso.webfluxtaskmanager.model.TaskStatus;
+import org.ascaso.webfluxtaskmanager.web.handler.TaskHandler;
+import org.ascaso.webfluxtaskmanager.domain.model.Task;
+import org.ascaso.webfluxtaskmanager.domain.model.TaskStatus;
 import org.ascaso.webfluxtaskmanager.service.TaskService;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;

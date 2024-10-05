@@ -1,6 +1,6 @@
-package org.ascaso.webfluxtaskmanager.controller;
+package org.ascaso.webfluxtaskmanager.web.controller;
 
-import org.ascaso.webfluxtaskmanager.model.Task;
+import org.ascaso.webfluxtaskmanager.domain.model.Task;
 import org.ascaso.webfluxtaskmanager.service.TaskService;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;

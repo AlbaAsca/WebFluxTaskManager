@@ -1,4 +1,4 @@
-package org.ascaso.webfluxtaskmanager.model;
+package org.ascaso.webfluxtaskmanager.domain.model;
 
 import lombok.Data;
 import org.springframework.data.annotation.Id;

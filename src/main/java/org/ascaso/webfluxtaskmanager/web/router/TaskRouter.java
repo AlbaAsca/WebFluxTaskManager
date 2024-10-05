@@ -1,6 +1,6 @@
-package org.ascaso.webfluxtaskmanager.router;
+package org.ascaso.webfluxtaskmanager.web.router;
 
-import org.ascaso.webfluxtaskmanager.handler.TaskHandler;
+import org.ascaso.webfluxtaskmanager.web.handler.TaskHandler;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.web.reactive.function.server.RouterFunction;

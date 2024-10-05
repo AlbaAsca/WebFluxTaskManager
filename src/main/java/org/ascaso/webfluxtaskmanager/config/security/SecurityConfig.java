@@ -1,4 +1,4 @@
-package org.ascaso.webfluxtaskmanager.security;
+package org.ascaso.webfluxtaskmanager.config.security;
 
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;

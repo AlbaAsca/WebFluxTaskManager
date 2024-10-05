@@ -1,4 +1,4 @@
-package org.ascaso.webfluxtaskmanager.security;
+package org.ascaso.webfluxtaskmanager.config.security;
 
 import io.jsonwebtoken.Jwts;
 import io.jsonwebtoken.SignatureAlgorithm;

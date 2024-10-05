@@ -1,4 +1,4 @@
-package org.ascaso.webfluxtaskmanager.filter;
+package org.ascaso.webfluxtaskmanager.config.filter;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;

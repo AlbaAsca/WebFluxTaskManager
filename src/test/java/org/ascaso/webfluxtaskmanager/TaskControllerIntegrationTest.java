@@ -1,7 +1,7 @@
 package org.ascaso.webfluxtaskmanager;
 
-import org.ascaso.webfluxtaskmanager.model.Task;
-import org.ascaso.webfluxtaskmanager.model.TaskStatus;
+import org.ascaso.webfluxtaskmanager.domain.model.Task;
+import org.ascaso.webfluxtaskmanager.domain.model.TaskStatus;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.context.SpringBootTest;
