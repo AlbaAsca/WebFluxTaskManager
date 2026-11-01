@@ -29,7 +29,8 @@ import reactor.test.StepVerifier;
 @Testcontainers(disabledWithoutDocker = true)
 class TaskApiIntegrationTest {
 
-    private static final MongoDBContainer MONGO = new MongoDBContainer("mongo:8.0")
+    // MongoDB 8.x no arranca en kernels Linux >= 6.19 (SERVER-121912), los de los runners de GitHub en 2026.
+    private static final MongoDBContainer MONGO = new MongoDBContainer("mongo:7.0")
             .withLogConsumer(new Slf4jLogConsumer(LoggerFactory.getLogger("mongo")));
 
     /** Se arranca antes de crear el contexto de Spring; Ryuk lo elimina al acabar los tests. */

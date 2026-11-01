@@ -2,7 +2,7 @@
 # `docker compose --profile app up --build` levanta MongoDB y la aplicación.
 services:
   mongo:
-    image: mongo:8.0
+    image: mongo:7.0 # 8.x no arranca en kernels Linux >= 6.19 (SERVER-121912)
     ports:
       - "27017:27017"
     volumes:
