@@ -29,7 +29,7 @@ class TaskApiIntegrationTest {
 
     @Container
     @ServiceConnection
-    static MongoDBContainer mongo = new MongoDBContainer("mongo:8");
+    static MongoDBContainer mongo = new MongoDBContainer("mongo:8.0");
 
     @Autowired
     private WebTestClient client;
