@@ -8,13 +8,15 @@ import org.ascaso.webfluxtaskmanager.web.TaskEventsRouter;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.context.SpringBootTest;
+import org.springframework.boot.test.context.TestConfiguration;
+import org.springframework.context.annotation.Bean;
+import org.springframework.context.annotation.Import;
 import org.springframework.boot.testcontainers.service.connection.ServiceConnection;
 import org.springframework.boot.webtestclient.autoconfigure.AutoConfigureWebTestClient;
 import org.springframework.core.ParameterizedTypeReference;
 import org.springframework.http.MediaType;
 import org.springframework.http.codec.ServerSentEvent;
 import org.springframework.test.web.reactive.server.WebTestClient;
-import org.testcontainers.junit.jupiter.Container;
 import org.testcontainers.junit.jupiter.Testcontainers;
 import org.testcontainers.mongodb.MongoDBContainer;
 
@@ -25,11 +27,18 @@ import reactor.test.StepVerifier;
 @SpringBootTest(webEnvironment = SpringBootTest.WebEnvironment.RANDOM_PORT)
 @AutoConfigureWebTestClient
 @Testcontainers(disabledWithoutDocker = true)
+@Import(TaskApiIntegrationTest.MongoContainerConfig.class)
 class TaskApiIntegrationTest {
 
-    @Container
-    @ServiceConnection
-    static MongoDBContainer mongo = new MongoDBContainer("mongo:8.0");
+    /** El contenedor es un bean: Spring lo arranca antes de crear el cliente de MongoDB. */
+    @TestConfiguration(proxyBeanMethods = false)
+    static class MongoContainerConfig {
+        @Bean
+        @ServiceConnection
+        MongoDBContainer mongo() {
+            return new MongoDBContainer("mongo:8.0");
+        }
+    }
 
     @Autowired
     private WebTestClient client;
