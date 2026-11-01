@@ -1,176 +1,179 @@
-# WebFlux Task Manager
+<p align="center">
+  <img src="docs/img/hero.svg" alt="WebFlux Task Manager: lo que cambia un usuario lo ven todos al instante" width="100%">
+</p>
 
-**WebFlux Task Manager** is a reactive task tracking application built using **Spring Boot**, **Spring WebFlux**, and **MongoDB Atlas**. The application demonstrates reactive programming by using **MongoDB Reactive** for handling task data, along with a secure and scalable backend.
+<p align="center">
+  <a href="https://github.com/AlbaAsca/WebFluxTaskManager/actions/workflows/ci.yml"><img src="https://github.com/AlbaAsca/WebFluxTaskManager/actions/workflows/ci.yml/badge.svg" alt="CI"></a>
+  <img src="https://img.shields.io/badge/Java-21-ED8B00?logo=openjdk&logoColor=white" alt="Java 21">
+  <img src="https://img.shields.io/badge/Spring%20Boot-4.1-6DB33F?logo=springboot&logoColor=white" alt="Spring Boot 4.1">
+  <img src="https://img.shields.io/badge/WebFlux-reactivo-6DB33F?logo=spring&logoColor=white" alt="WebFlux">
+  <img src="https://img.shields.io/badge/MongoDB-reactivo-47A248?logo=mongodb&logoColor=white" alt="MongoDB">
+  <img src="https://img.shields.io/badge/tests-Testcontainers-2496ED?logo=docker&logoColor=white" alt="Testcontainers">
+</p>
 
-## Table of Contents
+<p align="center">
+  <b>Una API REST reactiva de tareas, de las que no bloquean ni un hilo.</b><br>
+  HATEOAS para navegar la API sin construir URLs · errores RFC 9457 · cambios en tiempo real por Server-Sent Events.
+</p>
 
-- [Features](#features)
-- [Technologies](#technologies)
-- [Prerequisites](#prerequisites)
-- [Setup](#setup)
-- [Running the Application](#running-the-application)
-- [API Endpoints](#api-endpoints)
-- [Testing](#testing)
-- [License](#license)
+> 🇬🇧 **In English:** a reactive task API built with Java 21, Spring Boot 4 and Spring WebFlux on reactive MongoDB.
+> HAL/HATEOAS responses, RFC 9457 problem details, HTTP Basic with role-based access, and real-time change
+> events streamed over Server-Sent Events to every connected browser. Tested with WebFlux slices, StepVerifier
+> and an end-to-end Testcontainers suite against a real MongoDB in CI.
 
----
+## Qué hace
 
-## Features
+Una lista de tareas compartida. Cuando alguien crea, edita o borra una tarea, **todas las pestañas abiertas
+se actualizan al instante**, sin recargar: el servidor empuja el cambio por Server-Sent Events.
 
-- **Reactive Programming** using **Spring WebFlux**.
-- **MongoDB Atlas** as a reactive database.
-- **CRUD Operations**: Create, Read, Update, and Delete tasks.
-- **Validation** of task data using `javax.validation`.
-- **Security**: Spring Security integration for role-based access control.
-- **Thymeleaf** templates for basic UI (optional).
-- **Monitoring**: Spring Boot Actuator endpoints for health checks and metrics.
+<!-- GIF de dos ventanas sincronizadas: se añadirá aquí -->
 
----
+| | |
+|---|---|
+| **Reactivo de punta a punta** | Netty + WebFlux + driver reactivo de MongoDB: ninguna petición bloquea un hilo esperando a la base de datos |
+| **Tiempo real** | Cada alta, cambio o borrado se publica en un `Sinks.Many` y se difunde por SSE a todos los clientes |
+| **API navegable (HATEOAS)** | Cada tarea trae sus enlaces `self`, `update`, `delete`; el frontend usa esos enlaces, no URLs escritas a mano |
+| **Errores estándar** | `application/problem+json` (RFC 9457), con el detalle de cada campo inválido |
+| **Seguridad por roles** | HTTP Basic: `USER` lee, crea y edita; solo `ADMIN` borra. Usuarios por configuración, nunca en el código |
+| **Documentada** | OpenAPI + Swagger UI en `/swagger-ui.html` |
 
-## Technologies
+## Arquitectura
 
-The following technologies and dependencies are used in this project:
+```mermaid
+flowchart LR
+    B1["🧑 Navegador A"] -- "POST /api/tasks" --> C
+    subgraph APP["Spring Boot 4 · WebFlux (Netty)"]
+        C["TaskController<br/>@RestController + HATEOAS"]
+        S["TaskService<br/>Sinks.Many&lt;TaskEvent&gt;"]
+        R["TaskEventsRouter<br/>RouterFunction (SSE)"]
+        C --> S
+        S -- "emite CREATED/UPDATED/DELETED" --> R
+    end
+    S <--> M[("MongoDB<br/>driver reactivo")]
+    R -- "text/event-stream" --> B1
+    R -- "text/event-stream" --> B2["🧑 Navegador B"]
+```
 
-- **Java 22**
-- **Spring Boot 3.4**
-- **Spring WebFlux** for reactive web framework.
-- **Spring Data MongoDB Reactive** for reactive data handling.
-- **Spring Security** for authentication and authorization.
-- **MongoDB Atlas** for cloud-hosted NoSQL database.
-- **Lombok** to reduce boilerplate code.
-- **Spring Boot DevTools** for hot reload during development.
-- **Spring Boot Actuator** for monitoring and metrics.
-- **H2 Database** (optional, for testing).
+Las dos formas de programar WebFlux conviven a propósito: **`@RestController`** para el CRUD y una
+**`RouterFunction`** funcional para el flujo de eventos.
 
----
+### Un cambio, de principio a fin
 
-## Prerequisites
+```mermaid
+sequenceDiagram
+    autonumber
+    participant A as Navegador A
+    participant API as WebFlux
+    participant DB as MongoDB
+    participant B as Navegador B
+    B->>API: GET /api/tasks/events (SSE, conexión abierta)
+    API-->>B: : heartbeat (al instante y cada 15 s)
+    A->>API: PUT /api/tasks/42 {status: COMPLETED}
+    API->>DB: save() — sin bloquear
+    DB-->>API: tarea guardada
+    API-->>A: 200 + HAL con _links
+    API-->>B: event: UPDATED · data: {tarea}
+    B->>B: recarga la lista y resalta la tarea
+```
 
-Before running this application, ensure you have:
+## La API
 
-- **Java 22** or higher installed.
-- A **MongoDB Atlas** account (or a local MongoDB instance).
-- **Maven** installed to manage project dependencies.
+| Método | Ruta | Rol | Respuesta |
+|---|---|---|---|
+| `GET` | `/api/tasks?status=PENDING` | USER | Colección HAL ordenada por fecha límite |
+| `GET` | `/api/tasks/{id}` | USER | Tarea con enlaces, o `404` problem+json |
+| `POST` | `/api/tasks` | USER | `201` + `Location` |
+| `PUT` | `/api/tasks/{id}` | USER | Tarea modificada |
+| `DELETE` | `/api/tasks/{id}` | **ADMIN** | `204` (un USER recibe `403`) |
+| `GET` | `/api/tasks/events` | USER | `text/event-stream`: `CREATED` · `UPDATED` · `DELETED` |
 
----
+<details>
+<summary>Ejemplo de respuesta HAL</summary>
 
-## Setup
-
-1. **Clone the repository**:
-   ```bash
-   git clone https://github.com/yourusername/WebFluxTaskManager.git
-   cd WebFluxTaskManager
-    ```
-2. **Configure MongoDB Atlas**:
-    - Create a **MongoDB Atlas** cluster if you haven't already.
-    - Whitelist your IP address in MongoDB Atlas or use `0.0.0.0/0` for development purposes (Note: using `0.0.0.0/0` is not recommended for production environments as it allows access from any IP).
-    - Create a **database user** in Atlas and assign appropriate roles (readWrite access is recommended for development).
-    - Obtain the **connection string** from MongoDB Atlas by selecting **Connect** > **Connect your application**. Choose **Java** and copy the connection string in the format:
-      ```
-      mongodb+srv://<username>:<password>@cluster0.mongodb.net/myFirstDatabase?retryWrites=true&w=majority
-      ```
-    - Replace `<username>`, `<password>`, and `myFirstDatabase` with your own database credentials and the name of the database you want to use.
-
-
-3. **Set environment variables**:
-   Set the following environment variables in your system to avoid hardcoding sensitive information:
-
-    - `MONGO_DB_USER`: Your MongoDB Atlas username.
-    - `MONGO_DB_PASSWORD`: Your MongoDB Atlas password.
-    - `MONGO_DB_HOST`: Your MongoDB Atlas cluster host (e.g., `cluster0.mongodb.net`).
-    - `MONGO_DB_NAME`: The name of your database.
-
-
----
-
-## Running the Application
-
-1. **Run the application locally**:
-   Use the following Maven command to run the application:
-   ```bash
-    ./mvnw spring-boot:run
-   ```
-
-2. **Access the application**:
-   Once the application is running, you can access the Task Tracker API at `http://localhost:8080`.
-
----
-
-## API Endpoints
-
-The following API endpoints are available for managing tasks:
-
-| Method | Endpoint         | Description                         |
-|--------|------------------|-------------------------------------|
-| GET    | `/tasks`          | Retrieve a list of all tasks        |
-| GET    | `/tasks/{id}`     | Retrieve a specific task by ID      |
-| POST   | `/tasks`          | Create a new task                   |
-| PUT    | `/tasks/{id}`     | Update an existing task by ID       |
-| DELETE | `/tasks/{id}`     | Delete a task by ID                 |
-
-### Example request (creating a task):
-
-`POST /tasks`
-
-**Headers**: `Content-Type: application/json`
-
-**Body**:
 ```json
 {
-  "title": "Complete WebFlux Project",
-  "description": "Finish the WebFlux Task Tracker application",
+  "id": "6725...",
+  "title": "Preparar el examen",
   "status": "IN_PROGRESS",
-  "dueDate": "2024-10-01"
+  "dueDate": "2026-11-30",
+  "createdAt": "2026-11-01T20:41:03Z",
+  "_links": {
+    "self":   { "href": "http://localhost:8080/api/tasks/6725..." },
+    "update": { "href": "http://localhost:8080/api/tasks/6725..." },
+    "delete": { "href": "http://localhost:8080/api/tasks/6725..." },
+    "tasks":  { "href": "http://localhost:8080/api/tasks" }
+  }
 }
 ```
+</details>
 
-### Example response (getting all tasks):
+<details>
+<summary>Ejemplo de error (RFC 9457)</summary>
 
-`GET /tasks`
-
-**Response**:
 ```json
-[
-  {
-    "id": "60f7b3f0b9b2e209d4c7f0f5",
-    "title": "Complete WebFlux Project",
-    "description": "Finish the WebFlux Task Tracker application",
-    "status": "IN_PROGRESS",
-    "dueDate": "2024-10-01"
-  },
-  {
-    "id": "60f7b3f0b9b2e209d4c7f0f6",
-    "title": "Review Documentation",
-    "description": "Review the project documentation and update it",
-    "status": "PENDING",
-    "dueDate": "2024-09-28"
-  }
-]
+{
+  "type": "about:blank",
+  "title": "Datos no válidos",
+  "status": 400,
+  "detail": "La tarea no es válida",
+  "errors": { "title": "El título es obligatorio", "dueDate": "La fecha límite es obligatoria" }
+}
+```
+</details>
+
+## Cómo ejecutarlo
+
+Necesitas Java 21 y Docker.
+
+```bash
+./mvnw spring-boot:run          # levanta MongoDB con Docker Compose y la aplicación
 ```
 
----
+Abre <http://localhost:8080> en **dos ventanas** y cambia una tarea en una: la otra se actualiza sola.
+Usuarios de demo: `user` / `user` y `admin` / `admin` (cámbialos con `APP_USER_PASSWORD` y `APP_ADMIN_PASSWORD`).
 
-## Testing
+| Otras formas | |
+|---|---|
+| Todo en contenedores | `docker compose --profile app up --build` |
+| Con MongoDB Atlas u otro | `MONGODB_URI=mongodb+srv://... ./mvnw spring-boot:run` |
+| Swagger UI | <http://localhost:8080/swagger-ui.html> |
+| Probar el tiempo real con curl | `curl -N -u user:user localhost:8080/api/tasks/events` |
 
-To run the tests for the application, use the following command:
-- `./mvnw test`
+## Tests
 
-### Test Coverage:
+```bash
+./mvnw verify
+```
 
-- **Unit Tests**: Tests for services and controllers.
-- **Integration Tests**: End-to-end tests that ensure the correct functioning of the entire application.
-- **Security Tests**: Tests for authentication and authorization functionality using Spring Security.
+| Capa | Cómo | Qué comprueba |
+|---|---|---|
+| Web | `@WebFluxTest` + `WebTestClient` | enlaces HAL, filtro por estado, 404 y 400 en RFC 9457, `Location`, 401 sin usuario, 403 si un USER borra |
+| Servicio | `StepVerifier` + Mockito | que cada cambio emite su evento, que una modificación conserva id y fechas |
+| De punta a punta | `@SpringBootTest` + **Testcontainers** (MongoDB real) | ciclo completo alta → cambio → filtro → borrado, y que el flujo SSE recibe `CREATED`, `UPDATED`, `DELETED` |
 
----
+El test de integración se salta solo si la máquina no tiene Docker; en el CI de GitHub Actions corre siempre.
 
-## License
+## Decisiones y su porqué
 
-This project is licensed under the MIT License. See the `LICENSE` file for more details.
+- **`record` inmutable para la tarea.** Modificar es crear una copia (`withContent`), así no hay estado compartido
+  mutable en un código donde varias peticiones se ejecutan a la vez en pocos hilos.
+- **`Sinks.many().multicast().directBestEffort()`.** Cada cliente recibe los cambios desde que se conecta y uno lento
+  no frena a los demás. Para varias instancias habría que pasar a MongoDB Change Streams o un broker.
+- **Latido SSE inmediato y cada 15 s.** Sin el primero, el cliente no recibe las cabeceras hasta el primer cambio
+  (lo detectó el test de integración); los siguientes evitan que un proxy cierre la conexión por inactividad.
+- **DTO de entrada separado (`TaskRequest`).** El cliente nunca puede fijar `id` ni las fechas de auditoría.
+- **MongoDB 7.0 en tests y Compose.** En 2026, MongoDB 8.x se niega a arrancar en kernels Linux 6.19+
+  ([SERVER-121912](https://jira.mongodb.org/browse/SERVER-121912)), que es lo que usan los runners de GitHub.
+  Lo descubrió el CI leyendo los logs del contenedor.
+- **HTTP Basic y no JWT.** La versión anterior traía un `JwtUtil` que nadie usaba y con una clave nueva en cada
+  arranque; mejor quitarlo que aparentar.
 
----
+## Historia
 
-## Additional Notes
+Empezó en 2024 como proyecto para aprender WebFlux (Spring Boot 3.4 *snapshot*, Java 22, MongoDB Atlas). En
+noviembre de 2026 lo modernicé: Java 21 LTS, Spring Boot 4.1 estable, HATEOAS, errores estándar, eventos SSE reales
+(antes se generaban tareas falsas cada 10 s), seguridad configurable, Testcontainers, Docker y CI.
 
-- If you are running the application in **Docker** or another containerized environment, make sure to configure the environment variables (`MONGO_DB_USER`, `MONGO_DB_PASSWORD`, `MONGO_DB_HOST`, and `MONGO_DB_NAME`) within the container setup.
+## Licencia
 
-- For **production environments**, ensure that sensitive credentials are securely stored, and avoid exposing them in version control or public configuration files.
+MIT.
