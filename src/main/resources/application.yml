@@ -1,6 +1,26 @@
 spring:
   application:
-    name: WebFluxTaskManager
-  data:
-    mongodb:
-      uri: mongodb+srv://${MONGO_DB_USER}:${MONGO_DB_PASSWORD}@${MONGO_DB_HOST}/${MONGO_DB_NAME}?retryWrites=true&w=majority&appName=WebFluxTaskManager
+    name: webflux-task-manager
+  mongodb:
+    # Local: lo levanta `docker compose` (soporte integrado de Spring Boot). Atlas u otro: MONGODB_URI.
+    uri: ${MONGODB_URI:mongodb://localhost:27017/tasks}
+
+app:
+  security:
+    users:
+      - name: ${APP_USER_NAME:user}
+        password: ${APP_USER_PASSWORD:user}
+        roles: [USER]
+      - name: ${APP_ADMIN_NAME:admin}
+        password: ${APP_ADMIN_PASSWORD:admin}
+        roles: [USER, ADMIN]
+
+springdoc:
+  swagger-ui:
+    path: /swagger-ui.html
+
+management:
+  endpoints:
+    web:
+      exposure:
+        include: health,info

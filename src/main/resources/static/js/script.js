@@ -1,248 +1,147 @@
-// Fetch tasks from API and display them
-function fetchTasks() {
-    fetch('/api/tasks') // API call to get tasks
-        .then(response => {
-            if (!response.ok) throw new Error('Failed to fetch tasks');
-            return response.json();
-        })
-        .then(renderTasks) // Render tasks after fetching
-        .catch(error => {
-            console.error('Error:', error);
-            alert('Failed to fetch tasks.');
-        });
+// Cliente de la API: navega por los enlaces HATEOAS (_links) en vez de construir URLs a mano,
+// y escucha /api/tasks/events (SSE) para reflejar al instante los cambios de cualquier usuario.
+
+const API = '/api/tasks';
+const STATUS_LABEL = { PENDING: 'Pendiente', IN_PROGRESS: 'En curso', COMPLETED: 'Hecha' };
+let currentFilter = '';
+
+const $ = (id) => document.getElementById(id);
+
+function escapeHtml(text) {
+    const div = document.createElement('div');
+    div.textContent = text ?? '';
+    return div.innerHTML;
 }
 
-// Render the list of tasks in the DOM
+function toast(message) {
+    const el = $('toast');
+    el.textContent = message;
+    el.classList.add('show');
+    clearTimeout(toast.timer);
+    toast.timer = setTimeout(() => el.classList.remove('show'), 2500);
+}
+
+async function api(url, options = {}) {
+    const response = await fetch(url, {
+        ...options,
+        headers: { 'Content-Type': 'application/json', Accept: 'application/hal+json', ...options.headers },
+    });
+    if (response.status === 403) throw new Error('No tienes permiso: solo admin puede borrar tareas.');
+    if (!response.ok) {
+        const problem = await response.json().catch(() => ({}));
+        const fields = problem.errors ? Object.values(problem.errors).join(' · ') : '';
+        throw new Error(fields || problem.detail || `Error ${response.status}`);
+    }
+    return response.status === 204 ? null : response.json();
+}
+
+async function loadTasks() {
+    const url = currentFilter ? `${API}?status=${currentFilter}` : API;
+    const page = await api(url);
+    renderTasks(page._embedded?.tasks ?? []);
+}
+
 function renderTasks(tasks) {
-    const taskList = document.getElementById('taskList');
-    taskList.innerHTML = ''; // Clear task list
-
+    const list = $('taskList');
     if (tasks.length === 0) {
-        taskList.innerHTML = '<li>No tasks available.</li>';
-    } else {
-        tasks.forEach(task => {
-            const listItem = document.createElement('li');
-            listItem.classList.add('task-item');
-            listItem.innerHTML = `
-                <div class="task-content">
-                    <span class="task-id"><strong>ID:</strong> ${task.id}</span>
-                    <h3 class="task-title">${task.title}</h3>
-                    <p class="task-description"><strong>Description:</strong> ${task.description}</p>
-                    <p class="task-status"><strong>Status:</strong> ${task.status}</p>
-                    <p class="task-due-date"><strong>Due Date:</strong> ${task.dueDate}</p>
-                </div>
-                <div class="task-actions">
-                    <button class="edit-btn" onclick="editTask('${task.id}')">Edit</button>
-                    <button class="delete-btn" onclick="deleteTask('${task.id}')">Delete</button>
-                </div>
-            `;
-            taskList.appendChild(listItem); // Add task to the list
-        });
-    }
-}
-
-// Delete a task
-function deleteTask(taskId) {
-    if (!confirm('Are you sure you want to delete this task?')) return;
-
-    // Simulated API call to delete a task
-    fetch(`/api/tasks/${taskId}`, {
-        method: 'DELETE'
-    })
-        .then(response => {
-            if (!response.ok) throw new Error('Failed to delete task');
-            const taskList = document.getElementById('taskList');
-            const listItem = taskList.querySelector(`button[onclick="deleteTask('${taskId}')"]`).parentElement.parentElement;
-            taskList.removeChild(listItem); // Remove task from DOM
-        })
-        .catch(error => {
-            console.error('Error:', error);
-            alert('Failed to delete task.');
-        });
-}
-
-// Edit a task
-function editTask(taskId) {
-    // Fetch task details to pre-fill the form for editing
-    fetch(`/api/tasks/${taskId}`)
-        .then(response => {
-            if (!response.ok) throw new Error('Failed to fetch task data');
-            return response.json();
-        })
-        .then(task => {
-            document.getElementById('taskId').value = task.id;
-            document.getElementById('taskTitle').value = task.title;
-            document.getElementById('taskDescription').value = task.description;
-            document.getElementById('taskDueDate').value = task.dueDate;
-            document.getElementById('taskStatus').value = task.status;
-
-            // Switch to edit mode
-            document.getElementById('addTaskBtn').style.display = 'none';
-            document.getElementById('editTaskBtn').style.display = 'inline';
-        })
-        .catch(error => {
-            console.error('Error:', error);
-            alert('Failed to load task for editing.');
-        });
-}
-
-// Save the edited task
-function saveTask() {
-    const taskId = document.getElementById('taskId').value;
-    const updatedTask = {
-        id: taskId,
-        title: document.getElementById('taskTitle').value.trim(),
-        description: document.getElementById('taskDescription').value.trim(),
-        dueDate: document.getElementById('taskDueDate').value,
-        status: document.getElementById('taskStatus').value
-    };
-
-    // Validate data
-    if (!updatedTask.title || !updatedTask.description || !updatedTask.dueDate) {
-        alert('All fields are required.');
+        list.innerHTML = '<li class="empty">No hay tareas.</li>';
         return;
     }
-
-    // Simulate API call to save updated task
-    fetch(`/api/tasks/${taskId}`, {
-        method: 'PUT',
-        headers: {
-            'Content-Type': 'application/json'
-        },
-        body: JSON.stringify(updatedTask)
-    })
-        .then(response => {
-            if (!response.ok) throw new Error('Failed to save task');
-            alert('Task updated successfully.');
-            document.getElementById('taskForm').reset(); // Reset form
-            document.getElementById('addTaskBtn').style.display = 'inline';
-            document.getElementById('editTaskBtn').style.display = 'none';
-            fetchTasks(); // Reload tasks
-        })
-        .catch(error => {
-            console.error('Error:', error);
-            alert('Failed to update task.');
-        });
-}
-
-// Add a new task
-function addTask() {
-    const title = document.getElementById('taskTitle').value.trim();
-    const description = document.getElementById('taskDescription').value.trim();
-    const dueDate = document.getElementById('taskDueDate').value;
-
-    // Validate input
-    if (!title || !description || !dueDate) {
-        alert('All fields are required.');
-        return;
-    }
-
-    const newTask = {
-        title: title,
-        description: description,
-        status: 'PENDING', // Default status is PENDING
-        dueDate: dueDate
-    };
-
-    // Simulate API call to add a task
-    fetch('/api/tasks', {
-        method: 'POST',
-        headers: {
-            'Content-Type': 'application/json'
-        },
-        body: JSON.stringify(newTask)
-    })
-        .then(response => {
-            if (!response.ok) throw new Error('Failed to add task');
-            return response.json();
-        })
-        .then(addedTask => {
-            addTaskToList(addedTask);
-
-            // Reset form
-            document.getElementById('taskForm').reset();
-        })
-        .catch(error => {
-            console.error('Error:', error);
-            alert('Failed to add task.');
-        });
-}
-
-// Smooth animation when adding tasks to the list
-function addTaskToList(task) {
-    const taskList = document.getElementById('taskList');
-    const listItem = document.createElement('li');
-    listItem.classList.add('task-item');
-
-    listItem.innerHTML = `
-        <div class="task-content">
-            <span class="task-id"><strong>ID:</strong> ${task.id}</span>
-            <h3 class="task-title">${task.title}</h3>
-            <p class="task-description"><strong>Description:</strong> ${task.description}</p>
-            <p class="task-status ${task.status}"><strong>Status:</strong> ${task.status}</p>
-            <p class="task-due-date"><strong>Due Date:</strong> ${task.dueDate}</p>
-        </div>
-        <div class="task-actions">
-            <button class="edit-btn" onclick="editTask('${task.id}')">Edit</button>
-            <button class="delete-btn" onclick="deleteTask('${task.id}')">Delete</button>
-        </div>
-    `;
-
-    // Fade-in effect for new tasks
-    listItem.style.opacity = '0';
-    taskList.appendChild(listItem);
-
-    setTimeout(() => {
-        listItem.style.opacity = '1';
-    }, 100);
-}
-
-
-// Set the current date by default in the due date input
-window.onload = function() {
-    const today = new Date();
-    const year = today.getFullYear();
-    const month = String(today.getMonth() + 1).padStart(2, '0'); // Months are zero-based
-    const day = String(today.getDate()).padStart(2, '0');
-
-    // Format date as YYYY-MM-DD
-    const formattedDate = `${year}-${month}-${day}`;
-
-    // Set the default value for the due date input
-    document.getElementById('taskDueDate').value = formattedDate;
-};
-
-// Función para iniciar la recepción de eventos en tiempo real
-function startTaskStream() {
-    const eventSource = new EventSource('/api/tasks/task-stream');  // Conexión SSE al backend
-
-    eventSource.onmessage = function(event) {
-        const task = JSON.parse(event.data);  // Parsear el objeto Task que llega del servidor
-
-        // Crear el elemento de la nueva tarea y añadirlo a la lista
-        const taskList = document.getElementById('taskList');
-        const listItem = document.createElement('li');
-        listItem.classList.add('task-item');
-        listItem.innerHTML = `
+    list.innerHTML = tasks.map((task) => `
+        <li class="task-item" data-id="${escapeHtml(task.id)}">
             <div class="task-content">
-                <span class="task-id"><strong>ID:</strong> ${task.id}</span>
-                <h3 class="task-title">${task.title}</h3>
-                <p class="task-description"><strong>Descripción:</strong> ${task.description}</p>
-                <p class="task-status"><strong>Estado:</strong> ${task.status}</p>
-                <p class="task-due-date"><strong>Fecha límite:</strong> ${task.dueDate}</p>
+                <h3 class="task-title">${escapeHtml(task.title)}</h3>
+                ${task.description ? `<p class="task-description">${escapeHtml(task.description)}</p>` : ''}
+                <p class="meta">
+                    <span class="task-status ${task.status}">${STATUS_LABEL[task.status]}</span>
+                    <span class="task-due-date">📅 ${escapeHtml(task.dueDate)}</span>
+                </p>
             </div>
-        `;
-        taskList.appendChild(listItem);  // Añadir la tarea al DOM
-    };
-
-    eventSource.onerror = function(err) {
-        console.error('Error en la conexión SSE:', err);
-        eventSource.close();
-    };
+            <div class="task-actions">
+                <button class="edit-btn" data-href="${task._links.update.href}">Editar</button>
+                <button class="delete-btn" data-href="${task._links.delete.href}">Borrar</button>
+            </div>
+        </li>`).join('');
 }
 
-// Llamar a la función para iniciar el flujo de tareas en tiempo real cuando se cargue la página
-document.addEventListener('DOMContentLoaded', startTaskStream);
+function resetForm() {
+    $('taskForm').reset();
+    $('editHref').value = '';
+    $('taskDueDate').value = new Date().toISOString().slice(0, 10);
+    $('submitBtn').textContent = 'Añadir tarea';
+    $('cancelBtn').hidden = true;
+    $('formError').textContent = '';
+}
 
-// Fetch tasks when the page loads
-document.addEventListener('DOMContentLoaded', fetchTasks);
+async function submitForm(event) {
+    event.preventDefault();
+    const body = JSON.stringify({
+        title: $('taskTitle').value.trim(),
+        description: $('taskDescription').value.trim() || null,
+        status: $('taskStatus').value,
+        dueDate: $('taskDueDate').value,
+    });
+    const editHref = $('editHref').value;
+    try {
+        await api(editHref || API, { method: editHref ? 'PUT' : 'POST', body });
+        resetForm();
+    } catch (error) {
+        $('formError').textContent = error.message;
+    }
+}
+
+async function startEdit(href) {
+    const task = await api(href);
+    $('editHref').value = task._links.update.href;
+    $('taskTitle').value = task.title;
+    $('taskDescription').value = task.description ?? '';
+    $('taskDueDate').value = task.dueDate;
+    $('taskStatus').value = task.status;
+    $('submitBtn').textContent = 'Guardar cambios';
+    $('cancelBtn').hidden = false;
+    $('taskTitle').focus();
+}
+
+async function onListClick(event) {
+    const button = event.target.closest('button');
+    if (!button) return;
+    try {
+        if (button.classList.contains('edit-btn')) await startEdit(button.dataset.href);
+        if (button.classList.contains('delete-btn') && confirm('¿Borrar esta tarea?')) {
+            await api(button.dataset.href, { method: 'DELETE' });
+        }
+    } catch (error) {
+        toast(error.message);
+    }
+}
+
+function listenToChanges() {
+    const source = new EventSource(`${API}/events`);
+    const live = $('live');
+    source.onopen = () => live.classList.replace('off', 'on');
+    source.onerror = () => live.classList.replace('on', 'off'); // EventSource reintenta solo
+    const labels = { CREATED: 'Nueva tarea', UPDATED: 'Tarea actualizada', DELETED: 'Tarea borrada' };
+    for (const type of Object.keys(labels)) {
+        source.addEventListener(type, (event) => {
+            const change = JSON.parse(event.data);
+            toast(`${labels[type]}${change.task ? `: ${change.task.title}` : ''}`);
+            loadTasks().then(() => {
+                document.querySelector(`[data-id="${CSS.escape(change.taskId)}"]`)?.classList.add('flash');
+            });
+        });
+    }
+}
+
+document.addEventListener('DOMContentLoaded', () => {
+    resetForm();
+    $('taskForm').addEventListener('submit', submitForm);
+    $('cancelBtn').addEventListener('click', resetForm);
+    $('taskList').addEventListener('click', onListClick);
+    document.querySelectorAll('.chip').forEach((chip) => chip.addEventListener('click', () => {
+        document.querySelector('.chip.active').classList.remove('active');
+        chip.classList.add('active');
+        currentFilter = chip.dataset.status;
+        loadTasks().catch((error) => toast(error.message));
+    }));
+    loadTasks().then(listenToChanges).catch((error) => toast(error.message));
+});
