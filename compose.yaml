@@ -1,0 +1,28 @@
+# `./mvnw spring-boot:run` levanta solo MongoDB (soporte Docker Compose de Spring Boot).
+# `docker compose --profile app up --build` levanta MongoDB y la aplicación.
+services:
+  mongo:
+    image: mongo:8
+    ports:
+      - "27017:27017"
+    volumes:
+      - mongo-data:/data/db
+    healthcheck:
+      test: ["CMD", "mongosh", "--quiet", "--eval", "db.adminCommand('ping')"]
+      interval: 5s
+      retries: 20
+
+  app:
+    profiles: [app]
+    build: .
+    ports:
+      - "8080:8080"
+    environment:
+      MONGODB_URI: mongodb://mongo:27017/tasks
+      SPRING_DOCKER_COMPOSE_ENABLED: "false"
+    depends_on:
+      mongo:
+        condition: service_healthy
+
+volumes:
+  mongo-data:
