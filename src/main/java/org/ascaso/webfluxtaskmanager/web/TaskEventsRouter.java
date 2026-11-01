@@ -31,7 +31,8 @@ public class TaskEventsRouter {
         return route(GET(PATH), request -> {
             Flux<ServerSentEvent<TaskEvent>> changes = service.events()
                     .map(event -> ServerSentEvent.builder(event).event(event.type().name()).id(event.taskId()).build());
-            Flux<ServerSentEvent<TaskEvent>> heartbeat = Flux.interval(Duration.ofSeconds(15))
+            // El primer latido sale al instante: así el cliente recibe las cabeceras sin esperar al primer cambio.
+            Flux<ServerSentEvent<TaskEvent>> heartbeat = Flux.interval(Duration.ZERO, Duration.ofSeconds(15))
                     .map(tick -> ServerSentEvent.<TaskEvent>builder().comment("heartbeat").build());
             return ServerResponse.ok()
                     .contentType(MediaType.TEXT_EVENT_STREAM)
