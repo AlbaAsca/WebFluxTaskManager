@@ -15,6 +15,8 @@ import org.springframework.http.codec.ServerSentEvent;
 import org.springframework.test.context.DynamicPropertyRegistry;
 import org.springframework.test.context.DynamicPropertySource;
 import org.springframework.test.web.reactive.server.WebTestClient;
+import org.slf4j.LoggerFactory;
+import org.testcontainers.containers.output.Slf4jLogConsumer;
 import org.testcontainers.junit.jupiter.Testcontainers;
 import org.testcontainers.mongodb.MongoDBContainer;
 
@@ -27,7 +29,8 @@ import reactor.test.StepVerifier;
 @Testcontainers(disabledWithoutDocker = true)
 class TaskApiIntegrationTest {
 
-    private static final MongoDBContainer MONGO = new MongoDBContainer("mongo:8.0");
+    private static final MongoDBContainer MONGO = new MongoDBContainer("mongo:8.0")
+            .withLogConsumer(new Slf4jLogConsumer(LoggerFactory.getLogger("mongo")));
 
     /** Se arranca antes de crear el contexto de Spring; Ryuk lo elimina al acabar los tests. */
     @DynamicPropertySource
