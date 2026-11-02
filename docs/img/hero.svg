@@ -1,25 +1,18 @@
 <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 1200 380" width="1200" height="380" font-family="'Segoe UI', 'Helvetica Neue', Arial, sans-serif">
+  <!-- Paleta Tokyo Night (github.com/folke/tokyonight.nvim) -->
   <defs>
     <linearGradient id="bg" x1="0" y1="0" x2="1" y2="1">
-      <stop offset="0" stop-color="#0B1026"/>
-      <stop offset="1" stop-color="#212946"/>
+      <stop offset="0" stop-color="#16161E"/>
+      <stop offset="1" stop-color="#16161E"/>
     </linearGradient>
-    <linearGradient id="title" x1="0" x2="1">
-      <stop offset="0" stop-color="#6DB33F"/>
-      <stop offset="0.5" stop-color="#08F7FE"/>
-      <stop offset="1" stop-color="#FE53BB"/>
-    </linearGradient>
-    <filter id="glow" x="-50%" y="-50%" width="200%" height="200%">
-      <feGaussianBlur stdDeviation="4" result="b"/>
-      <feMerge><feMergeNode in="b"/><feMergeNode in="SourceGraphic"/></feMerge>
-    </filter>
+    <linearGradient id="title" x1="0" x2="1"><stop offset="0" stop-color="#7AA2F7"/><stop offset="1" stop-color="#BB9AF7"/></linearGradient>
     <pattern id="grid" width="40" height="40" patternUnits="userSpaceOnUse">
-      <path d="M40 0H0V40" fill="none" stroke="#2A3459" stroke-width="1"/>
+      <path d="M40 0H0V40" fill="none" stroke="#1F2335" stroke-width="1"/>
     </pattern>
     <style>
-      .node { fill: #161D3A; stroke-width: 2; }
-      .label { fill: #E0E6F0; font-size: 17px; font-weight: 600; text-anchor: middle; }
-      .sub { fill: #8C9BB5; font-size: 13px; text-anchor: middle; }
+      .node { fill: #24283B; stroke-width: 2; }
+      .label { fill: #C0CAF5; font-size: 17px; font-weight: 600; text-anchor: middle; }
+      .sub { fill: #9AA5CE; font-size: 13px; text-anchor: middle; }
       .flow { fill: none; stroke-width: 2.5; stroke-dasharray: 6 8; animation: dash 1.2s linear infinite; }
       @keyframes dash { to { stroke-dashoffset: -28; } }
       .ping { animation: ping 3s ease-out infinite; transform-box: fill-box; transform-origin: center; }
@@ -30,43 +23,43 @@
   <rect width="1200" height="380" rx="18" fill="url(#bg)"/>
   <rect width="1200" height="380" rx="18" fill="url(#grid)" opacity="0.6"/>
 
-  <text x="60" y="88" font-size="52" font-weight="800" fill="url(#title)" filter="url(#glow)">WebFlux Task Manager</text>
-  <text x="62" y="128" font-size="21" fill="#E0E6F0">API reactiva de tareas: lo que cambia un usuario lo ven todos, al instante.</text>
-  <text x="62" y="158" font-size="15" fill="#8C9BB5">Java 21 · Spring Boot 4 · WebFlux · MongoDB reactivo · HATEOAS · SSE · Testcontainers</text>
+  <text x="60" y="88" font-size="52" font-weight="800" fill="url(#title)">WebFlux Task Manager</text>
+  <text x="62" y="128" font-size="21" fill="#C0CAF5">API reactiva de tareas: lo que cambia un usuario lo ven todos, al instante.</text>
+  <text x="62" y="158" font-size="15" fill="#9AA5CE">Java 21 · Spring Boot 4 · WebFlux · MongoDB reactivo · HATEOAS · SSE · Testcontainers</text>
 
   <!-- Petición: cliente A -> API -> Mongo -->
-  <path class="flow" stroke="#6DB33F" d="M210 245 H420"/>
-  <path class="flow" stroke="#6DB33F" d="M600 245 H810"/>
-  <g filter="url(#glow)">
-    <circle r="6" fill="#6DB33F"><animateMotion dur="2.4s" repeatCount="indefinite" path="M210 245 H420 M600 245 H810"/></circle>
+  <path class="flow" stroke="#9ECE6A" d="M210 245 H420"/>
+  <path class="flow" stroke="#9ECE6A" d="M600 245 H810"/>
+  <g>
+    <circle r="6" fill="#9ECE6A"><animateMotion dur="2.4s" repeatCount="indefinite" path="M210 245 H420 M600 245 H810"/></circle>
   </g>
 
   <!-- Difusión SSE: API -> clientes B y C -->
-  <path class="flow" stroke="#FE53BB" d="M510 285 C 510 330, 330 330, 210 330"/>
-  <path class="flow" stroke="#FE53BB" d="M510 285 C 510 330, 700 340, 1000 330"/>
-  <g filter="url(#glow)">
-    <circle r="5" fill="#FE53BB"><animateMotion dur="2.4s" begin="1.2s" repeatCount="indefinite" path="M510 285 C 510 330, 330 330, 210 330"/></circle>
-    <circle r="5" fill="#FE53BB"><animateMotion dur="2.4s" begin="1.2s" repeatCount="indefinite" path="M510 285 C 510 330, 700 340, 1000 330"/></circle>
+  <path class="flow" stroke="#BB9AF7" d="M510 285 C 510 330, 330 330, 210 330"/>
+  <path class="flow" stroke="#BB9AF7" d="M510 285 C 510 330, 700 340, 1000 330"/>
+  <g>
+    <circle r="5" fill="#BB9AF7"><animateMotion dur="2.4s" begin="1.2s" repeatCount="indefinite" path="M510 285 C 510 330, 330 330, 210 330"/></circle>
+    <circle r="5" fill="#BB9AF7"><animateMotion dur="2.4s" begin="1.2s" repeatCount="indefinite" path="M510 285 C 510 330, 700 340, 1000 330"/></circle>
   </g>
 
-  <rect class="node" x="60" y="210" width="150" height="70" rx="14" stroke="#6DB33F"/>
+  <rect class="node" x="60" y="210" width="150" height="70" rx="14" stroke="#9ECE6A"/>
   <text class="label" x="135" y="242">Usuaria A</text>
   <text class="sub" x="135" y="264">POST /api/tasks</text>
 
-  <rect class="node" x="60" y="305" width="150" height="50" rx="14" stroke="#FE53BB"/>
+  <rect class="node" x="60" y="305" width="150" height="50" rx="14" stroke="#BB9AF7"/>
   <text class="label" x="135" y="336">Usuario B</text>
 
-  <rect class="node ping" x="420" y="205" width="180" height="80" rx="14" stroke="#08F7FE"/>
-  <rect class="node" x="420" y="205" width="180" height="80" rx="14" stroke="#08F7FE"/>
+  <rect class="node ping" x="420" y="205" width="180" height="80" rx="14" stroke="#7DCFFF"/>
+  <rect class="node" x="420" y="205" width="180" height="80" rx="14" stroke="#7DCFFF"/>
   <text class="label" x="510" y="240">Spring WebFlux</text>
   <text class="sub" x="510" y="262">HATEOAS · Sinks</text>
 
-  <rect class="node" x="810" y="210" width="150" height="70" rx="14" stroke="#00ED64"/>
+  <rect class="node" x="810" y="210" width="150" height="70" rx="14" stroke="#9ECE6A"/>
   <text class="label" x="885" y="242">MongoDB</text>
   <text class="sub" x="885" y="264">reactivo</text>
 
-  <rect class="node" x="1000" y="305" width="150" height="50" rx="14" stroke="#FE53BB"/>
+  <rect class="node" x="1000" y="305" width="150" height="50" rx="14" stroke="#BB9AF7"/>
   <text class="label" x="1075" y="336">Usuario C</text>
 
-  <text x="760" y="322" font-size="13" fill="#FE53BB" text-anchor="middle">SSE: CREATED · UPDATED · DELETED</text>
+  <text x="760" y="322" font-size="13" fill="#BB9AF7" text-anchor="middle">SSE: CREATED · UPDATED · DELETED</text>
 </svg>

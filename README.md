@@ -4,11 +4,11 @@
 
 <p align="center">
   <a href="https://github.com/AlbaAsca/WebFluxTaskManager/actions/workflows/ci.yml"><img src="https://github.com/AlbaAsca/WebFluxTaskManager/actions/workflows/ci.yml/badge.svg" alt="CI"></a>
-  <img src="https://img.shields.io/badge/Java-21-ED8B00?logo=openjdk&logoColor=white" alt="Java 21">
-  <img src="https://img.shields.io/badge/Spring%20Boot-4.1-6DB33F?logo=springboot&logoColor=white" alt="Spring Boot 4.1">
-  <img src="https://img.shields.io/badge/WebFlux-reactivo-6DB33F?logo=spring&logoColor=white" alt="WebFlux">
-  <img src="https://img.shields.io/badge/MongoDB-reactivo-47A248?logo=mongodb&logoColor=white" alt="MongoDB">
-  <img src="https://img.shields.io/badge/tests-Testcontainers-2496ED?logo=docker&logoColor=white" alt="Testcontainers">
+  <img src="https://img.shields.io/badge/Java-21-24283B?logo=openjdk&logoColor=FF9E64&labelColor=1A1B26" alt="Java 21">
+  <img src="https://img.shields.io/badge/Spring%20Boot-4.1-24283B?logo=springboot&logoColor=9ECE6A&labelColor=1A1B26" alt="Spring Boot 4.1">
+  <img src="https://img.shields.io/badge/WebFlux-reactivo-24283B?logo=spring&logoColor=9ECE6A&labelColor=1A1B26" alt="WebFlux">
+  <img src="https://img.shields.io/badge/MongoDB-reactivo-24283B?logo=mongodb&logoColor=9ECE6A&labelColor=1A1B26" alt="MongoDB">
+  <img src="https://img.shields.io/badge/tests-Testcontainers-24283B?logo=docker&logoColor=7DCFFF&labelColor=1A1B26" alt="Testcontainers">
 </p>
 
 <p align="center">
@@ -27,7 +27,7 @@ Una lista de tareas compartida. Cuando alguien crea, edita o borra una tarea, **
 se actualizan al instante**, sin recargar: el servidor empuja el cambio por Server-Sent Events.
 
 <p align="center">
-  <img src="docs/img/demo.gif" alt="La lista se actualiza sola cuando otro usuario crea, completa o borra tareas" width="484">
+  <img src="docs/img/demo.gif?v=2" alt="La lista se actualiza sola cuando otro usuario crea, completa o borra tareas" width="484">
 </p>
 
 | | |
