@@ -26,7 +26,9 @@
 Una lista de tareas compartida. Cuando alguien crea, edita o borra una tarea, **todas las pestañas abiertas
 se actualizan al instante**, sin recargar: el servidor empuja el cambio por Server-Sent Events.
 
-<!-- GIF de dos ventanas sincronizadas: se añadirá aquí -->
+<p align="center">
+  <img src="docs/img/demo.gif" alt="La lista se actualiza sola cuando otro usuario crea, completa o borra tareas" width="484">
+</p>
 
 | | |
 |---|---|
